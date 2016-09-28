@@ -30,7 +30,7 @@ GM = 0.00013  #Marsh seepage constant [d-1]
 StgB = 3.5    #Boundary water surface elevation [m]
 f.ET.min = 0.2 #Minimum ET reduction factor
 H.ET = 0.25    #Depth at/below which ET is reduced [m] ; H = max(0,StgM-E0)
-dC.max = 0.1   #max daily stage change for the Canal [m]
+dC.max = 0.1/3.28   #max daily stage change for the Canal [m] converted from 0.1ft
 
 for (i in 1:365) {
   
