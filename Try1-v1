@@ -8,6 +8,9 @@
 ## Most sensitive parameter was ET reduction depth                 ##
 ## When dStgC/dt > 0.1, the "extra water was routed to the Marsh   ##
 
+# Clear all variables before new model run #
+rm(list=ls(all=TRUE))
+
 # Read in inflows and outflows #
 Qin = as.matrix(read.csv("2box_inflow.csv"))      #[cfs]
 Qout = as.matrix(read.csv("2box_outflow.csv"))    #[cfs]
