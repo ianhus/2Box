@@ -29,11 +29,12 @@ StgC[1] = 5.20   #Initial stage in canal [m NGVD29]
 StgM[1] = 5.16   #Initial stage in marsh [m NGVD29]
 C = 1.88E9    #Canal/marsh water transport [m-1*d-1]
 GC = 0.042    #Canal seepage constant [d-1] 
-GM = 0.00013  #Marsh seepage constant [d-1] 
+GM = 0.0001315  #Marsh seepage constant [d-1] 
 StgB = 3.5    #Boundary water surface elevation [m]
 f.ET.min = 0.2 #Minimum ET reduction factor
 H.ET = 0.25    #Depth at/below which ET is reduced [m] ; H = max(0,StgM-E0)
 dC.max = 0.1/3.28   #max daily stage change for the Canal [m] converted from 0.1ft
+StgC.min = 4.27     #minimum Canal stage, after Waldon & Co. [m] converted from 14ft
 
 for (i in 1:365) {
   
@@ -51,6 +52,9 @@ for (i in 1:365) {
     
     d.StgC = dStgC/abs(dStgC)*dC.max
     StgC[i+1] = StgC[i] + d.StgC
+    if (StgC[i+1] < StgC.min) {   #adjusting Canal stage up to minimum if necessary 
+      StgC[i+1] == StgC.min
+    }
     
     Q.mc = (dStgC - d.StgC)*Ac
     dStgM = P[i]*0.0254 - ET[i]/1000 - GM*(StgM[i] - StgB) + Qmc/Am + Q.mc/Am
@@ -59,6 +63,9 @@ for (i in 1:365) {
   } else {
     
     StgC[i+1] = StgC[i] + dStgC
+    if (StgC[i+1] < StgC.min) {   #adjusting Canal stage up to minimum if necessary
+      StgC[i+1] == StgC.min
+    }
     dStgM = P[i]*0.0254 - ET[i]/1000 - GM*(StgM[i] - StgB) + Qmc/Am
     StgM[i+1] = StgM[i] + dStgM
     
@@ -68,9 +75,12 @@ for (i in 1:365) {
 
 
 
-plot(StgC, ylim = range(4,7), main = paste("Canal"))
+plot(StgC, ylim = range(4,6.5), main = paste("Canal"))
 lines(canal)
-plot(StgM, ylim = range(4,7), main = paste("Marsh"))
+plot(StgM, ylim = range(4,6.5), main = paste("Marsh"))
 lines(marsh)
-  
+
 #paste("C = ", C , sep = "")
+
+
+
