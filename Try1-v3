@@ -1,1 +1,86 @@
-Code!
+#################################################
+###############  LoxTry 1: 2-Box  ###############
+#### After Meselhe, Arceneaux, Waldon (2010) ####
+#################################################
+
+## 1-8C used to calibrate Canal; avg of 1-7 and 1-9 used for Marsh                 ##
+## StgC values below 4.27m were adjusted up to 4.27m                               ##
+## Most sensitive parameter was ET reduction depth                                 ##
+## When dStgC/dt > 0.1, the "extra" water was routed to (or taken from) the Marsh  ##
+
+## This model is only being run for one year, 2015, so slight errors may occur due ##
+## to parameters that were estimated based on data from about 1995-2005 or so.     ##
+
+# Clear all variables before new model run #
+rm(list=ls(all=TRUE))
+
+# Read in inflows and outflows #
+Qin <- as.matrix(read.csv("2box_inflow.csv"))      #[cfs]
+Qout <- as.matrix(read.csv("2box_outflow.csv"))    #[cfs]
+P <- as.matrix(read.csv("rain_WCA1ME.csv"))        #[inches]
+ET <- as.matrix(read.csv("ET_STA1W.csv"))          #[mm]
+cal <- as.matrix(read.csv("stage_cal.csv"))        #[m]
+marsh <- cal[,1]; canal <- cal[,2]                 #The datasets that Waldon calibrated against, aka "Observed"
+
+# Define constants and parameters #
+Ac <- 996/640*1.62^2*1000^2       #Area of canal [m2] (given in acres, converted to m^2)
+Am <- 138325/640*1.62^2*1000^2    #Area of marsh [m2] (given in acres, converted to m^2)
+E0 <- 4.62     #Avg ground surface elevation of Marsh [m NGVD29] (from Waldon)
+StgC <- NULL   #Setting up canal stage vector
+StgM <- NULL   #Setting up marsh stage vector
+StgC[1] <- 5.20   #Initial stage in canal [m NGVD29] (1/1/15)
+StgM[1] <- 5.16   #Initial stage in marsh [m NGVD29] (1/1/15)
+C <- 1.88E9    #Canal/marsh water transport coeff [m-1*d-1]
+GC <- 0.042    #Canal seepage constant [d-1] 
+GM <- 0.0001315  #Marsh seepage constant [d-1] 
+StgB <- 3.5    #Boundary water surface elevation for seepage [m]
+f.ET.min <- 0.2 #Minimum ET reduction factor
+H.ET <- 0.25    #Depth at/below which ET is reduced [m] ; H = max(0,StgM-E0)
+dC.max <- 0.1/3.28   #max daily stage change for the Canal [m] converted from 0.1ft
+StgC.min <- 4.27     #minimum Canal stage, after Waldon & Co. [m] converted from 14ft
+
+# Daily calculations #
+for (i in 1:365) {
+  
+  if (StgM[i] - E0 < 0.25) {
+    
+    ET[i] <- ET[i]*max(f.ET.min, min(1,(max(0,StgM[i] - E0))/H.ET))
+    
+  }
+  dStgC1 <- P[i]*0.0254 - ET[i]/1000 - GC*(StgC[i] - StgB)
+  Qmc <- (C*max(0,(StgM[i] - E0))^3*(StgC[i] - (StgM[i] + P[i]*0.0254 - ET[i]/1000 - GM*(StgM[i] - StgB))))
+  dStgC <- dStgC1 + (Qin[i] - Qout[i])*86400/35.3/Ac - Qmc/Ac
+  
+  if (abs(dStgC) > dC.max) {   #0.1ft set as max daily stage change for Canal
+    
+    d.StgC <- dStgC/abs(dStgC)*dC.max
+    StgC[i+1] <- StgC[i] + d.StgC
+    if (StgC[i+1] < StgC.min) {   #adjusting Canal stage up to minimum if necessary 
+      StgC[i+1] == StgC.min
+    }
+    
+    Q.mc <- (dStgC - d.StgC)*Ac
+    dStgM <- P[i]*0.0254 - ET[i]/1000 - GM*(StgM[i] - StgB) + Qmc/Am + Q.mc/Am
+    StgM[i+1] <- StgM[i] + dStgM
+    
+  } else {
+    
+    StgC[i+1] <- StgC[i] + dStgC
+    if (StgC[i+1] < StgC.min) {   #adjusting Canal stage up to minimum if necessary 
+      StgC[i+1] == StgC.min
+    }
+    dStgM <- P[i]*0.0254 - ET[i]/1000 - GM*(StgM[i] - StgB) + Qmc/Am
+    StgM[i+1] <- StgM[i] + dStgM
+    
+  }
+}
+
+#print(cbind(P*0.0254, ET/1000, Qin*86400/35.3/Ac, Qout*86400/35.3/Ac))
+
+
+plot(StgC, ylim = range(4,6.5), main = paste("Canal"))
+lines(canal)
+plot(StgM, ylim = range(4,6.5), main = paste("Marsh"))
+lines(marsh)
+
+#paste("C = ", C , sep = "")
