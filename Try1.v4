@@ -15,13 +15,12 @@
 rm(list=ls(all=TRUE))
 
 # Read in inflows and outflows #
-setwd("E:/Kati/Lox/LoxMods")
-Qin <- as.numeric(as.matrix(read.csv("Flows_in.csv"))[,13])          #[cfs]
-Qout <- as.numeric(as.matrix(read.csv("Flows_out.csv"))[,10])        #[cfs]
-P <- as.numeric(as.matrix(read.csv("rain.csv"))[,2])   #[inches]  (1997 file is actually LOXWS)
-ET <- as.numeric(as.matrix(read.csv("ET.csv"))[,2])    #[mm]
-cal <- as.matrix(read.csv("stage_cal.csv"))            #[ft]
-marsh <- cal[,1]/3.28; canal <- cal[,2]/3.28           #The datasets that Waldon calibrated against, aka "Observed"
+Qin <- as.matrix(read.csv("2box_inflow.csv"))      #[cfs]
+Qout <- as.matrix(read.csv("2box_outflow.csv"))    #[cfs]
+P <- as.matrix(read.csv("rain.csv"))               #[inches]  (1997 file is actually LOXWS)
+ET <- as.matrix(read.csv("ET.csv"))                #[mm]
+cal <- as.matrix(read.csv("stage_cal.csv"))        #[ft]
+marsh <- cal[,1]/3.28; canal <- cal[,2]/3.28      #The datasets that Waldon calibrated against, aka "Observed"
 
 # Define constants and parameters #
 Ac <- 996/640*1.62^2*1000^2       #Area of canal [m2] (given in acres, converted to m^2)
@@ -92,6 +91,3 @@ plot(marsh, ylim = range(4,6), main = paste("Marsh")) # xlim = range(2000,3000),
 lines(StgM)
 
 #paste("C = ", C , sep = "")
-
-
-
