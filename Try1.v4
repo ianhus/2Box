@@ -86,10 +86,10 @@ for (i in 1:length(Qin)) {
 #print(cbind(P*0.0254, ET/1000, Qin*86400/35.3/Ac, Qout*86400/35.3/Ac))
 
 
-#plot(StgC, ylim = range(3,6), main = paste("Canal")) # xlim = range(2000,3000),
-#lines(canal)
-plot(StgM, ylim = range(4,6), main = paste("Marsh")) # xlim = range(2000,3000),
-lines(marsh)
+#plot(canal, ylim = range(3,6), main = paste("Canal")) # xlim = range(2000,3000),
+#lines(StgC)
+plot(marsh, ylim = range(4,6), main = paste("Marsh")) # xlim = range(2000,3000),
+lines(StgM)
 
 #paste("C = ", C , sep = "")
 
